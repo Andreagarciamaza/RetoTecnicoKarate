@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+}
+
+group 'com.api.test'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    karateJU5Version = '1.1.0'
+    karateVersion = '0.9.2'
+    cucumberReportingVersion = '5.7.0'
+}
+
+dependencies {
+    testImplementation "com.intuit.karate:karate-junit5:${karateJU5Version}"
+    testImplementation "com.intuit.karate:karate-netty:${karateVersion}"
+    testImplementation "com.intuit.karate:karate-apache:${karateVersion}"
+    testImplementation "net.masterthought:cucumber-reporting:${cucumberReportingVersion}"
+}
+
+sourceSets {
+    test {
+        java {
+            srcDir file('src/test/java')
+            exclude '**/*UiRunner*.java'
+        }
+        resources {
+            srcDir file('src/test/java')
+            exclude '**/*.java'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+    systemProperties System.getProperties()
+    maxParallelForks = 8
+    systemProperty "file.encoding", "utf-8"
+    systemProperty "cucumber.options", System.getProperty("cucumber.options")
+    //for karate
+    systemProperty "karate.options", System.properties.getProperty("karate.options")
+    systemProperty "karate.env", System.properties.getProperty("test")
+    outputs.upToDateWhen { false }
+}
+
+task karateDebug(type: JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    main = 'com.intuit.karate.cli.Main'
+}
